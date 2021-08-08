@@ -14,7 +14,10 @@
         text-decoration: line-through
       }
       li{
-          list-style: disc;
+          list-style: none;
+      }
+      .w300{
+        width: 300px;
       }
     </style>
   </head>
@@ -28,25 +31,21 @@
             id="newTodo" v-model="text">
           <button class="btn btn-primary" type="button" id="addTodo" @click="addItem">新增</button>
         </div>
-        <div class="card text-center">
+        <div class="card">
           <ul class="list-group list-group-flush text-left" id="todoList">
-            <li  class="list-group-item">
+            <li v-for="item in filterList" :key="item.id" class="list-group-item">
               <div class="d-flex">
                 <div class="form-check">
-                  <div>
-                    <input id="a" type="checkbox" class="form-check-input">
-                    <label for="a">代辦事項</label>
-                    <ul>
-                        <li v-for="item in data" :key="item.id">
-                            {{ item.text }}
-                            <div class="btn-group" role="group" aria-label="Basic outlined example">
-                                <button type="button" class="btn btn-outline-primary" @click="editItem(item)">Edit</button>
-                                <button type="button" class="btn btn-outline-primary" @click="removeItem(item)">Remove</button>
-                            </div>
-                        </li>
-                        
-                    </ul>
-                  </div>
+                  <ul>
+                    <li>
+                      <input id="a" type="checkbox" class="form-check-input" @click="item.completed = !item.completed" :checked="item.completed">
+                      {{ item.text }}
+                      <div class="btn-group" role="group" aria-label="Basic outlined example">
+                        <button type="button" class="btn btn-outline-primary" @click="editItem(item)">Edit</button>
+                        <button type="button" class="btn btn-outline-primary" @click="removeItem(item)">Remove</button>
+                      </div>
+                    </li>
+                  </ul>
                 </div>
                 <button type="button" class="btn-close ms-auto remove">
                 </button>
@@ -55,19 +54,7 @@
             <li  class="list-group-item">
               <div class="d-flex">
                 <div class="form-check">
-                  <div>
-                    <input id="b" type="checkbox" class="form-check-input" checked>
-                    <label for="b" class="completed">已完成 代辦事項</label>
-                  </div>
-                </div>
-                <button type="button" class="btn-close ms-auto remove">
-                </button>
-              </div>
-            </li>
-            <li  class="list-group-item">
-              <div class="d-flex">
-                <div class="form-check">
-                  <input class="form-control" type="text" v-model="temp.text" placeholder="編輯"/>
+                  <input class="form-control w300" type="text" v-model="temp.text" placeholder="編輯"/>
                 </div>
                 <button type="button" class="btn btn-outline-primary" @click="saveEdit">編輯完成</button>
               </div>
@@ -76,10 +63,10 @@
           <div class="card-footer d-flex justify-content-between">
             <span>有 <span id="taskCount">{{data.length}}</span> 筆任務</span>
             <div>
-              <a href="#" class="me-3">全部</a>
-              <a href="#" class="me-3">未完成</a>
-              <a href="#" class="me-3">已完成</a>
-              <a href="#" >清除所有任務</a>
+              <a href="#" class="me-3" @click.prevent="status='all'">全部</a>
+              <a href="#" class="me-3" @click.prevent="status='active'">未完成</a>
+              <a href="#" class="me-3" @click.prevent="status='completed'">已完成</a>
+              <a href="#" @click="clearAll">清除所有任務</a>
             </div>
           </div>
         </div>
@@ -93,10 +80,23 @@
       Vue.createApp({
         data() {
           return {
-            text: '我是Amber', //text
+            text: '', //text
             data: [],  //data
-            temp:{}
+            temp:{},
+            status:'all'
           }
+        },
+        computed:{ //篩選"已完成" "未完成"
+          filterList(){
+            switch(this.status){
+              case 'active':
+                return this.data.filter((item)=>!item.completed);
+              case 'completed':
+                return this.data.filter((item)=>item.completed);
+              default:
+                return this.data;
+            }
+          },
         },
         methods: {
           //#1.如何新增資料
@@ -124,6 +124,10 @@
             this.data[index]=this.temp;
 
             this.temp={}//清空 編輯框框內容
+          },
+          //清除所有項目
+          clearAll(){
+            this.data=[]
           }
         },
       }).mount('#app');
